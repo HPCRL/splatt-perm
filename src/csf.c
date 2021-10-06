@@ -100,6 +100,65 @@ idx_t p_csf_count_nnz(
   return right - left;
 }
 
+/**
+* @brief Find a permutation of modes with some permutation id
+*
+* @param dims The tensor dimensions.
+* @param nmodes The number of modes.
+* @param order_num The mode to place first.
+* @param perm_dims The resulting permutation.
+*/
+static void p_perm_dims(
+  idx_t const * const dims,
+  idx_t const nmodes,
+  idx_t const permutation_id,
+  idx_t * const perm_dims)
+{
+  //printf("here %lld %lld \n",nmodes,permutation_id);
+  idx_t matched[MAX_NMODES];
+  for(idx_t m=0; m < nmodes; ++m) {
+    matched[m] = 0;
+  }
+
+  idx_t rem = permutation_id;
+  idx_t div = 1;
+  for(idx_t i=2 ; i<nmodes ; i++)
+  {
+    div *= i;
+  }
+
+  printf("Trying order permutation id %lld : ",permutation_id);
+  for(idx_t i=0 ; i<nmodes ; i++)
+  {
+    //printf("\ninside for loop %lld %lld \n",rem,div);
+
+    idx_t jump =  (idx_t) rem/div  + 1; 
+    idx_t id = 0;
+    while(jump > 0)
+    {
+      while(matched[id])
+      {
+        id = (id + 1) % nmodes;
+      }
+      jump --;
+      if(jump)
+        id = (id + 1) % nmodes;
+    }
+    perm_dims[i] = id;
+    matched[id] = 1;
+    printf("%lld",id);
+    if(i < nmodes - 1)
+      printf(" -> ");
+    //printf("div is %lld \n",div);
+    rem = rem % div;
+    if(i < nmodes -1)
+      div /= (nmodes- i - 1);
+    //printf("div is %lld \n",div);
+  }
+  printf("\n");
+  return;
+}
+
 
 /**
 * @brief Find a permutation of modes that results in non-increasing mode size.
@@ -600,6 +659,47 @@ static void p_fill_dim_iperm(
   }
 }
 
+/**
+ * @brief Find perm vector for a tensor
+ * 
+ * @param perm_dims The resulting permutation
+ * @param nmodes The number of modes
+ * @param order_num The id of the premutation
+*/
+static void perm_id(
+  idx_t * const perm_dims,
+  idx_t const nmodes,
+  idx_t const order_num
+)
+{
+  idx_t matched[MAX_NMODES];
+  for(idx_t m=0; m < nmodes; ++m) {
+    matched[m] = 0;
+  }
+
+  idx_t rem = order_num;
+  idx_t div = 1;
+  for(idx_t i=2 ; i<nmodes ; i++)
+  {
+    div *= i;
+  }
+
+  for(idx_t i=0 ; i<nmodes ; i++)
+  {
+    idx_t id = rem/div;
+    while(!matched[id])
+    {
+      id = (id + 1) % nmodes;
+    }
+    perm_dims[i] = id;
+    printf("%lld ",id);
+    rem = rem % div;
+    div /= nmodes-i;
+  }
+  printf("\n");
+}
+
+
 
 /**
 * @brief Allocate and fill a CSF tensor.
@@ -717,6 +817,7 @@ void csf_find_mode_order(
 
   /* no-op, perm_dims better be set... */
   case CSF_MODE_CUSTOM:
+    p_perm_dims(dims, nmodes, mode, perm_dims);
     break;
 
   default:
@@ -781,13 +882,16 @@ splatt_csf * csf_alloc(
   switch((splatt_csf_type) opts[SPLATT_OPTION_CSF_ALLOC]) {
   case SPLATT_CSF_ONEMODE:
     ret = splatt_malloc(sizeof(*ret));
-    p_mk_csf(ret, tt, CSF_SORTED_SMALLFIRST, 0, opts);
+    // p_mk_csf(ret, tt, CSF_SORTED_SMALLFIRST, 0, opts);
+    // Try permutations instead
+    p_mk_csf(ret, tt, CSF_MODE_CUSTOM, (idx_t) opts[SPLATT_PERM_ID], opts);
     break;
 
   case SPLATT_CSF_TWOMODE:
     ret = splatt_malloc(2 * sizeof(*ret));
     /* regular CSF allocation */
     p_mk_csf(ret + 0, tt, CSF_SORTED_SMALLFIRST, 0, opts);
+    
 
     /* make a copy of opts and don't tile the last mode
      * TODO make this configurable? */

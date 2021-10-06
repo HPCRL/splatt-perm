@@ -35,6 +35,7 @@ static struct argp_option cpd_options[] = {
   {"seed", TT_SEED, "SEED", 0, "random seed (default: system time)"},
   {"verbose", 'v', 0, 0, "turn on verbose output (default: no)"},
   {"stem", 's', "PATH", 0, "file stem for factorization output files (default: ./)"},
+  {"permutation", 'p', "PERM", 0, "Permutation id (default: 0)"},
   { 0 }
 };
 
@@ -90,6 +91,8 @@ static error_t parse_cpd_opt(
   case 'i':
     args->opts[SPLATT_OPTION_NITER] = (double) atoi(arg);
     break;
+  case 'p':
+    args->opts[SPLATT_PERM_ID] = (double) atoi(arg);
   case TT_TOL:
     args->opts[SPLATT_OPTION_TOLERANCE] = atof(arg);
     break;
@@ -174,7 +177,9 @@ int splatt_cpd_cmd(
   if(tt == NULL) {
     return SPLATT_ERROR_BADINPUT;
   }
+  
 
+  
   /* print basic tensor stats? */
   splatt_verbosity_type which_verb = args.opts[SPLATT_OPTION_VERBOSITY];
   if(which_verb >= SPLATT_VERBOSITY_LOW) {
