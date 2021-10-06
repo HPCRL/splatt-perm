@@ -20,10 +20,11 @@ double * splatt_default_opts(void)
   opts[SPLATT_OPTION_NITER]      = DEFAULT_ITS;
   opts[SPLATT_OPTION_VERBOSITY]  = SPLATT_VERBOSITY_LOW;
 
-  opts[SPLATT_OPTION_CSF_ALLOC] = SPLATT_CSF_TWOMODE;
+  opts[SPLATT_OPTION_CSF_ALLOC] = SPLATT_CSF_ONEMODE;
   opts[SPLATT_OPTION_TILE]      = SPLATT_NOTILE;
 
   opts[SPLATT_OPTION_PRIVTHRESH] = 0.02;
+  opts[SPLATT_PERM_ID] = 0;
 
   /* Tile one level by default. */
   opts[SPLATT_OPTION_TILELEVEL] = 1;

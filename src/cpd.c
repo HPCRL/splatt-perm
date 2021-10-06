@@ -318,15 +318,16 @@ double cpd_als_iterate(
   for(idx_t it=0; it < niters; ++it) {
     timer_fstart(&itertime);
     for(idx_t m=0; m < nmodes; ++m) {
-      timer_fstart(&modetime[m]);
+      //timer_fstart(&modetime[m]);
       mats[MAX_NMODES]->I = tensors[0].dims[m];
       m1->I = mats[m]->I;
 
       /* M1 = X * (C o B) */
+      timer_fstart(&modetime[m]);
       timer_start(&timers[TIMER_MTTKRP]);
       mttkrp_csf(tensors, mats, m, thds, mttkrp_ws, opts);
       timer_stop(&timers[TIMER_MTTKRP]);
-
+      timer_stop(&modetime[m]);
 #if 0
       /* M2 = (CtC .* BtB .* ...)^-1 */
       calc_gram_inv(m, nmodes, aTa);
@@ -348,7 +349,7 @@ double cpd_als_iterate(
 
       /* update A^T*A */
       mat_aTa(mats[m], aTa[m], rinfo, thds, nthreads);
-      timer_stop(&modetime[m]);
+      //timer_stop(&modetime[m]);
     } /* foreach mode */
 
     fit = p_calc_fit(nmodes, rinfo, thds, ttnormsq, lambda, mats, m1, aTa);
