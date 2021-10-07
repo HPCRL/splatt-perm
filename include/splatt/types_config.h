@@ -118,6 +118,7 @@ typedef enum
 
   SPLATT_OPTION_DECOMP,     /* Decomposition to use on distributed systems */
   SPLATT_OPTION_COMM,       /* Communication pattern to use */
+  SPLATT_PERM_ID,           /* Permutation id */
 
   SPLATT_OPTION_NOPTIONS    /* Gives the size of the options array. */
 } splatt_option_type;
